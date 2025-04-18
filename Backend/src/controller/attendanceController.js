@@ -1,4 +1,4 @@
-const { recognizeFace } = require("../services/faceRecognitionService");
+const { recognizeFace } = require("../service/faceRecognitionService");
 const Student = require("../database/StudentDb");
 const ApiResponse = require("../utils/api-response");
 

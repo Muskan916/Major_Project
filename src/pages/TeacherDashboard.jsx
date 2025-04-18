@@ -1,12 +1,43 @@
-import React, { useState } from "react";
-import LogoutButton from "../components/LogoutButton";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import React, { useRef, useState } from "react";
+import Webcam from "react-webcam";
+import axios from "axios";
 
-
-const TeacherDashboard = ({setUser}) => {
+const TeacherDashboard = ({ setUser }) => {
+  const webcamRef = useRef(null);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("dashboard"); // Track the active tab
+  const [message, setMessage] = useState(""); // Display backend response messages
+  const [loading, setLoading] = useState(false); // Handle loading state
+
+  // Function to capture an image and submit to backend
+  const captureAndSubmit = async () => {
+    setMessage(""); // Clear any existing messages
+    const imageSrc = webcamRef.current.getScreenshot(); // Capture image from webcam
+
+    if (!imageSrc) {
+      setMessage("Failed to capture image.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Convert the image to a Blob and send it to the backend
+      const blob = await fetch(imageSrc).then((res) => res.blob());
+      const formData = new FormData();
+      formData.append("image", blob, "face.jpg");
+
+      const response = await axios.post("http://localhost:5000/attendance/mark", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setMessage(response.data.message || "Attendance marked successfully!");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "An error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex bg-gray-100">
@@ -25,40 +56,37 @@ const TeacherDashboard = ({setUser}) => {
           <nav className="flex-1 p-4 space-y-6">
             <ul className="space-y-4">
               <li>
-                <a
-                  href="#"
-                  className="flex items-center space-x-3 text-lg hover:bg-blue-600 p-2 rounded-md"
+                <button
+                  onClick={() => setActiveTab("dashboard")}
+                  className={`flex items-center space-x-3 text-lg p-2 rounded-md ${
+                    activeTab === "dashboard" ? "bg-blue-600" : "hover:bg-blue-600"
+                  }`}
                 >
                   <i className="fas fa-home"></i>
                   <span>Dashboard</span>
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="flex items-center space-x-3 text-lg hover:bg-blue-600 p-2 rounded-md"
+                <button
+                  onClick={() => setActiveTab("attendance")}
+                  className={`flex items-center space-x-3 text-lg p-2 rounded-md ${
+                    activeTab === "attendance" ? "bg-blue-600" : "hover:bg-blue-600"
+                  }`}
                 >
-                  <i className="fas fa-user-graduate"></i>
-                  <span>Students</span>
-                </a>
+                  <i className="fas fa-clipboard-list"></i>
+                  <span>Attendance</span>
+                </button>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="flex items-center space-x-3 text-lg hover:bg-blue-600 p-2 rounded-md"
+                <button
+                  onClick={() => setActiveTab("calendar")}
+                  className={`flex items-center space-x-3 text-lg p-2 rounded-md ${
+                    activeTab === "calendar" ? "bg-blue-600" : "hover:bg-blue-600"
+                  }`}
                 >
                   <i className="fas fa-calendar-alt"></i>
                   <span>Calendar</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="flex items-center space-x-3 text-lg hover:bg-blue-600 p-2 rounded-md"
-                >
-                  <i className="fas fa-chart-line"></i>
-                  <span>Reports</span>
-                </a>
+                </button>
               </li>
             </ul>
           </nav>
@@ -76,34 +104,55 @@ const TeacherDashboard = ({setUser}) => {
             <i className="fas fa-bars"></i>
           </button>
           <h2 className="text-2xl font-semibold text-gray-800">
-            Welcome to the Teacher Dashboard
+            Teacher Dashboard
           </h2>
         </header>
 
-        {/* Calendar Section */}
+        {/* Tab Content */}
         <div className="p-6">
-          <div className="bg-white shadow-lg rounded-lg p-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              Calendar
-            </h3>
-            <FullCalendar
-              plugins={[dayGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth"
-              headerToolbar={{
-                left: "prev,next today",
-                center: "title",
-                right: "dayGridMonth,dayGridWeek,dayGridDay",
-              }}
-              events={[
-                { title: "Math Exam", start: "2025-03-10" },
-                { title: "Parent Meeting", start: "2025-03-15" },
-              ]}
-            />
-          </div>
+          {activeTab === "dashboard" && (
+            <div>
+              <h3 className="text-xl font-semibold mb-4">Dashboard Overview</h3>
+              <p>Welcome to the dashboard!</p>
+            </div>
+          )}
+
+          {activeTab === "attendance" && (
+            <div className="bg-white shadow-lg rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-4">Mark Attendance</h3>
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                screenshotFormat="image/jpeg"
+                className="rounded shadow-md w-72 h-72 mb-4"
+              />
+              <button
+                onClick={captureAndSubmit}
+                className="px-4 py-2 bg-green-600 text-white rounded"
+                disabled={loading}
+              >
+                {loading ? "Submitting..." : "Capture & Submit"}
+              </button>
+              {message && (
+                <p
+                  className={`mt-4 text-center ${
+                    message.includes("Error") ? "text-red-500" : "text-green-500"
+                  }`}
+                >
+                  {message}
+                </p>
+              )}
+            </div>
+          )}
+
+          {activeTab === "calendar" && (
+            <div className="bg-white shadow-lg rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-4">Calendar</h3>
+              <p>Here, you can manage your events and view schedules.</p>
+            </div>
+          )}
         </div>
       </main>
-            <LogoutButton setUser={setUser} />
-
     </div>
   );
 };
