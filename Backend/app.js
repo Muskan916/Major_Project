@@ -17,6 +17,7 @@ app.use(fileUpload());
 
 // Route handling
 app.use("/api/V1/admin", require("./src/routes/attendance-routes"));
+app.use("/api/V1/signup", require("./src/routes/user-routes"));
 
 app.get("/", (req, res) => res.send("Server is running!"));
 
