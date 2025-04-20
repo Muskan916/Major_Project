@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BASE_URL = "http://192.168.117.47:5000/api";
+const BASE_URL = "http://192.168.138.47:5000/api";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -11,11 +11,16 @@ const Signup = () => {
   });
   const [error, setError] = useState("");
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
   };
 
   const handleSubmit = async (e) => {
@@ -47,14 +52,35 @@ const Signup = () => {
         const data = await response.json();
         alert(data.message);
         setFormData({ email: "", password: "", accountType: "" });
-        navigate("/");
+
+        // Redirect to respective dashboard
+        const dashboardRoutes = {
+          student: "/student-dashboard",
+          teacher: "/teacher-dashboard",
+          parent: "/parent-dashboard",
+          admin: "/admin-dashboard",
+        };
+        const route = dashboardRoutes[data.user.accountType];
+        if (route) {
+          navigate(route);
+        } else {
+          setError("Invalid account type received.");
+        }
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || "Signup failed.");
+        let errorMessage = `Signup failed (Status: ${response.status})`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonError) {
+          const responseText = await response.text();
+          console.error("Non-JSON response:", responseText);
+        }
+        console.error("Signup error:", { status: response.status, message: errorMessage });
+        setError(errorMessage);
       }
     } catch (error) {
-      console.error("Error during signup:", error);
-      setError("An error occurred while signing up.");
+      console.error("Network error during signup:", error.message);
+      setError("An error occurred while signing up. Please check your network or server.");
     }
   };
 
@@ -98,7 +124,7 @@ const Signup = () => {
             <span>Courses</span>
           </a>
           <a
-            href="/"
+            href="/login"
             className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors"
           >
             <i className="fas fa-sign-in-alt"></i>
@@ -157,19 +183,26 @@ const Signup = () => {
                   required
                 />
               </div>
-              <div className="mb-4">
+              <div className="mb-4 relative">
                 <label htmlFor="password" className="block text-gray-700 font-medium mb-2">
                   Password
                 </label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-600 hover:text-gray-800 mt-8"
+                >
+                  <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                </button>
               </div>
               <div className="mb-6">
                 <label htmlFor="accountType" className="block text-gray-700 font-medium mb-2">
@@ -209,7 +242,7 @@ const Signup = () => {
             </form>
             <p className="text-center mt-4 text-gray-600">
               Already have an account?{" "}
-              <a href="/" className="text-blue-600 hover:underline">
+              <a href="/login" className="text-blue-600 hover:underline">
                 Login
               </a>
             </p>
