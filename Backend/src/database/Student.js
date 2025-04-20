@@ -19,6 +19,8 @@ const studentSchema = new mongoose.Schema({
     default: 'student',
     enum: ['student'],
   },
+    photoPath: { type: String }, // Path to uploaded photo
+
   createdAt: {
     type: Date,
     default: Date.now,

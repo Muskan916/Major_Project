@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BASE_URL = "http://192.168.138.47:5000/api";
+const BASE_URL = "http://192.168.117.47:5000/api";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -9,14 +9,19 @@ const Signup = () => {
     password: "",
     accountType: "",
   });
+  const [photo, setPhoto] = useState(null);
   const [error, setError] = useState("");
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePhotoChange = (e) => {
+    setPhoto(e.target.files[0]);
   };
 
   const togglePasswordVisibility = () => {
@@ -27,7 +32,6 @@ const Signup = () => {
     e.preventDefault();
     setError("");
 
-    // Basic validation
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       setError("Please enter a valid email address.");
       return;
@@ -40,20 +44,31 @@ const Signup = () => {
       setError("Please select an account type.");
       return;
     }
+    if (formData.accountType === 'student' && !photo) {
+      setError("Please upload a photo for student account.");
+      return;
+    }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('email', formData.email);
+    formDataToSend.append('password', formData.password);
+    formDataToSend.append('accountType', formData.accountType);
+    if (photo) {
+      formDataToSend.append('photo', photo);
+    }
 
     try {
       const response = await fetch(`${BASE_URL}/V1/users/signup`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: formDataToSend,
       });
 
       if (response.ok) {
         const data = await response.json();
         alert(data.message);
         setFormData({ email: "", password: "", accountType: "" });
+        setPhoto(null);
 
-        // Redirect to respective dashboard
         const dashboardRoutes = {
           student: "/student-dashboard",
           teacher: "/teacher-dashboard",
@@ -86,7 +101,6 @@ const Signup = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-blue-800 to-blue-600 text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -147,9 +161,7 @@ const Signup = () => {
         </nav>
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
         <header className="bg-white shadow-md p-4 flex items-center justify-between lg:justify-start">
           <button
             onClick={() => setSidebarOpen(true)}
@@ -164,7 +176,6 @@ const Signup = () => {
           </div>
         </header>
 
-        {/* Signup Form */}
         <main className="flex-1 flex items-center justify-center p-6">
           <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
             <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Sign Up</h2>
@@ -204,7 +215,7 @@ const Signup = () => {
                   <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
                 </button>
               </div>
-              <div className="mb-6">
+              <div className="mb-4">
                 <label htmlFor="accountType" className="block text-gray-700 font-medium mb-2">
                   Account Type
                 </label>
@@ -223,6 +234,22 @@ const Signup = () => {
                   <option value="admin">Admin</option>
                 </select>
               </div>
+              {formData.accountType === 'student' && (
+                <div className="mb-4">
+                  <label htmlFor="photo" className="block text-gray-700 font-medium mb-2">
+                    Upload Photo
+                  </label>
+                  <input
+                    type="file"
+                    id="photo"
+                    name="photo"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+              )}
               {error && <p className="text-red-500 text-center mb-4">{error}</p>}
               <div className="flex justify-between">
                 <button
@@ -234,7 +261,10 @@ const Signup = () => {
                 <button
                   type="reset"
                   className="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors"
-                  onClick={() => setFormData({ email: "", password: "", accountType: "" })}
+                  onClick={() => {
+                    setFormData({ email: "", password: "", accountType: "" });
+                    setPhoto(null);
+                  }}
                 >
                   Clear
                 </button>

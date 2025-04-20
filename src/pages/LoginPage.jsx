@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BASE_URL = "http://192.168.138.47:5000/api";
+const BASE_URL = "http://192.168.117.47:5000/api";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
