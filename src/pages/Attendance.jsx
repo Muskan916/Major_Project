@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import Webcam from "react-webcam";
-import axios from "axios";
 
 const AttendancePage = () => {
   const webcamRef = useRef(null);
@@ -24,19 +23,21 @@ const AttendancePage = () => {
       setLoading(true);
       const blob = await fetch(imageSrc).then((res) => res.blob());
       const formData = new FormData();
-      formData.append("image", blob, "face.jpg");
+      formData.append("photo", blob, "face.jpg"); // Match backend field name
 
-      const response = await axios.post(
-        "http://localhost:5000/attendance/mark",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const response = await fetch("http://192.168.117.47:5000/api/V1/users/attendance", {
+        method: "POST",
+        body: formData,
+      });
 
-      setMessage(response.data.message || "Attendance marked successfully!");
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to mark attendance.");
+      }
+
+      setMessage(data.message || "Attendance marked successfully!");
     } catch (error) {
-      setMessage(
-        error.response?.data?.message || "Error occurred while marking attendance."
-      );
+      setMessage(error.message || "Error occurred while marking attendance.");
     } finally {
       setLoading(false);
     }

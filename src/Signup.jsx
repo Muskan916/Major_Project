@@ -21,83 +21,149 @@ const Signup = () => {
   };
 
   const handlePhotoChange = (e) => {
-    setPhoto(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      const typedFile = new File([file], file.name, { type: file.type || "image/jpeg" });
+      setPhoto(typedFile);
+      console.log("Selected photo:", {
+        name: typedFile.name,
+        size: typedFile.size,
+        type: typedFile.type,
+      });
+    }
   };
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
 
-    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-    if (!formData.password || formData.password.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      return;
-    }
-    if (!formData.accountType) {
-      setError("Please select an account type.");
-      return;
-    }
-    if (formData.accountType === 'student' && !photo) {
-      setError("Please upload a photo for student account.");
-      return;
+  if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    setError("Please enter a valid email address.");
+    return;
+  }
+  if (!formData.password || formData.password.length < 6) {
+    setError("Password must be at least 6 characters long.");
+    return;
+  }
+  if (!formData.accountType) {
+    setError("Please select an account type.");
+    return;
+  }
+  if (formData.accountType === "student" && !photo) {
+    setError("Please upload a photo for student account.");
+    return;
+  }
+
+  let requestOptions;
+  if (formData.accountType === "student") {
+    // Convert photo to Base64
+    const reader = new FileReader();
+    const base64Photo = await new Promise((resolve) => {
+      reader.onload = () => resolve(reader.result.split(",")[1]); // Remove data:image/jpeg;base64,
+      reader.readAsDataURL(photo);
+    });
+
+    const payload = {
+      email: formData.email,
+      password: formData.password,
+      accountType: formData.accountType,
+      photo: base64Photo,
+      photoName: photo.name,
+      photoType: photo.type,
+    };
+
+    console.log("JSON payload:", {
+      email: payload.email,
+      password: payload.password,
+      accountType: payload.accountType,
+      photoName: payload.photoName,
+      photoType: payload.photoType,
+      photo: payload.photo.slice(0, 50) + "...",
+    });
+
+    requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    };
+  } else {
+    const urlEncodedData = new URLSearchParams();
+    urlEncodedData.append("email", formData.email);
+    urlEncodedData.append("password", formData.password);
+    urlEncodedData.append("accountType", formData.accountType);
+
+    console.log("URL-encoded data:", urlEncodedData.toString());
+
+    requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: urlEncodedData,
+    };
+  }
+
+  try {
+    console.log("Request URL:", `${BASE_URL}/V1/users/signup`);
+    console.log("Request Options:", {
+      method: requestOptions.method,
+      headers: requestOptions.headers,
+      body: formData.accountType === "student" ? "[JSON]" : requestOptions.body.toString(),
+    });
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    const response = await fetch(`${BASE_URL}/V1/users/signup`, {
+      ...requestOptions,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    console.log("Response Status:", response.status);
+    console.log("Response Headers:", Object.fromEntries(response.headers.entries()));
+
+    const contentType = response.headers.get("content-type");
+    let data;
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json();
+      console.log("Response JSON:", data);
+    } else {
+      const text = await response.text();
+      console.error("Non-JSON response:", text.slice(0, 500));
+      throw new Error(`Server returned non-JSON response (status: ${response.status})`);
     }
 
-    const formDataToSend = new FormData();
-    formDataToSend.append('email', formData.email);
-    formDataToSend.append('password', formData.password);
-    formDataToSend.append('accountType', formData.accountType);
-    if (photo) {
-      formDataToSend.append('photo', photo);
-    }
+    if (response.ok) {
+      console.log("Signup successful:", data);
+      alert(data.message || "Signup successful!");
+      setFormData({ email: "", password: "", accountType: "" });
+      setPhoto(null);
 
-    try {
-      const response = await fetch(`${BASE_URL}/V1/users/signup`, {
-        method: "POST",
-        body: formDataToSend,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert(data.message);
-        setFormData({ email: "", password: "", accountType: "" });
-        setPhoto(null);
-
-        const dashboardRoutes = {
-          student: "/student-dashboard",
-          teacher: "/teacher-dashboard",
-          parent: "/parent-dashboard",
-          admin: "/admin-dashboard",
-        };
-        const route = dashboardRoutes[data.user.accountType];
-        if (route) {
-          navigate(route);
-        } else {
-          setError("Invalid account type received.");
-        }
+      const dashboardRoutes = {
+        student: "/student-dashboard",
+        teacher: "/teacher-dashboard",
+        parent: "/parent-dashboard",
+        admin: "/admin-dashboard",
+      };
+      const route = dashboardRoutes[data.user?.accountType];
+      if (route) {
+        navigate(route);
       } else {
-        let errorMessage = `Signup failed (Status: ${response.status})`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch (jsonError) {
-          const responseText = await response.text();
-          console.error("Non-JSON response:", responseText);
-        }
-        console.error("Signup error:", { status: response.status, message: errorMessage });
-        setError(errorMessage);
+        setError("Invalid account type received from server.");
       }
-    } catch (error) {
-      console.error("Network error during signup:", error.message);
-      setError("An error occurred while signing up. Please check your network or server.");
+    } else {
+      console.error("Signup failed:", data);
+      setError(data.message || `Signup failed (Status: ${response.status})`);
     }
-  };
+  } catch (error) {
+    console.error("Network or fetch error during signup:", error);
+    setError(`Failed to sign up: ${error.message}`);
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -116,45 +182,27 @@ const Signup = () => {
           </button>
         </div>
         <nav className="p-4 space-y-2">
-          <a
-            href="#"
-            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
+          <a href="#" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
             <i className="fas fa-home"></i>
             <span>Home</span>
           </a>
-          <a
-            href="#"
-            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
+          <a href="#" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
             <i className="fas fa-info-circle"></i>
             <span>About</span>
           </a>
-          <a
-            href="#"
-            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
+          <a href="#" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
             <i className="fas fa-book"></i>
             <span>Courses</span>
           </a>
-          <a
-            href="/login"
-            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
+          <a href="/login" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
             <i className="fas fa-sign-in-alt"></i>
             <span>Login</span>
           </a>
-          <a
-            href="/signup"
-            className="flex items-center space-x-3 p-3 rounded-lg bg-blue-500 text-white transition-colors"
-          >
+          <a href="/signup" className="flex items-center space-x-3 p-3 rounded-lg bg-blue-500 text-white transition-colors">
             <i className="fas fa-user-plus"></i>
             <span>Sign Up</span>
           </a>
-          <a
-            href="#"
-            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
+          <a href="#" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
             <i className="fas fa-envelope"></i>
             <span>Contact</span>
           </a>
@@ -234,10 +282,10 @@ const Signup = () => {
                   <option value="admin">Admin</option>
                 </select>
               </div>
-              {formData.accountType === 'student' && (
+              {formData.accountType === "student" && (
                 <div className="mb-4">
                   <label htmlFor="photo" className="block text-gray-700 font-medium mb-2">
-                    Upload Photo
+                    Upload Photo (Clear face image)
                   </label>
                   <input
                     type="file"
