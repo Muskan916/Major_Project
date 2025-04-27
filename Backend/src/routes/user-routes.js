@@ -5,7 +5,7 @@ const multer = require("multer");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    cb(null, "uploads/"); // Ensure this directory exists
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -15,9 +15,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024,
-    fieldSize: 1024 * 1024,
-    fields: 10,
+    fileSize: 5 * 1024 * 1024, // Limit file size to 5MB
   },
   fileFilter: (req, file, cb) => {
     if (!file) return cb(null, true);
@@ -90,7 +88,16 @@ router.post(
   },
   userController.signup
 );
-
+router.post("/recognize", async (req, res) => {
+  try {
+    const image = req.files.image; // Assuming you're using express-fileupload
+    const studentId = await faceRecognitionService.recognizeFace(image.data); // Implement this function
+    res.json({ studentId });
+  } catch (error) {
+    console.error("Face recognition error:", error);
+    res.status(500).json({ error: "Face recognition failed" });
+  }
+});
 router.post("/login", userController.login);
 router.post("/attendance", userController.markAttendance);
 router.get("/students", userController.getStudents);

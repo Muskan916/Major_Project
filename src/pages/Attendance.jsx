@@ -25,7 +25,7 @@ const AttendancePage = () => {
       const formData = new FormData();
       formData.append("photo", blob, "face.jpg"); // Match backend field name
 
-      const response = await fetch("http://192.168.117.47:5000/api/V1/users/attendance", {
+      const response = await fetch("http://192.168.15.47:5000/api/V1/users/attendance", {
         method: "POST",
         body: formData,
       });

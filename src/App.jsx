@@ -5,6 +5,8 @@ import StudentDashboard from './pages/StudentDashboard';
 import TeacherDashboard from './pages/TeacherDashboard';
 import ParentDashboard from './pages/ParentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import ScheduleManagement from './pages/ScheduleManagement';
+import ViewSchedule from './pages/ViewSchedule';
 
 function App() {
   return (
@@ -17,6 +19,9 @@ function App() {
         <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
         <Route path="/parent-dashboard" element={<ParentDashboard />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/schedule" element={<ScheduleManagement />} />
+                <Route path="/view-schedule" element={<ViewSchedule />} />
+
       </Routes>
     </Router>
   );

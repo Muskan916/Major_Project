@@ -11,14 +11,21 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://192.168.117.47:5000"],
+    allow_origins=["http://localhost:5173", "http://192.168.15.47:5173", "http://192.168.15.47:5000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-client = MongoClient("mongodb://localhost:27017")
-db = client["Major_Project"]
+# MongoDB Atlas connection
+MONGODB_USER = "latkarmuskan16"
+MONGODB_PASSWORD = "JyD7bl4xulV9VBhl"
+MONGODB_CLUSTER = "cluster0.ffvwr.mongodb.net"
+DB_NAME = "Major_Project"
+
+mongo_uri = f"mongodb+srv://{MONGODB_USER}:{MONGODB_PASSWORD}@{MONGODB_CLUSTER}/{DB_NAME}?retryWrites=true&w=majority"
+client = MongoClient(mongo_uri)
+db = client[DB_NAME]
 students_collection = db["students"]
 
 logging.basicConfig(level=logging.INFO)

@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-
-const BASE_URL = "http://192.168.117.47:5000/api";
-const FACE_API_URL = "http://192.168.117.47:5000"; // FastAPI service
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const TeacherDashboard = () => {
   const [students, setStudents] = useState([]);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [manualAttendance, setManualAttendance] = useState(null);
   const videoRef = useRef(null);
@@ -16,16 +13,16 @@ const TeacherDashboard = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/V1/users/students`);
+        const response = await fetch('http://192.168.15.47:5000/api/V1/users/students');
         const data = await response.json();
         if (response.ok) {
           setStudents(data);
         } else {
-          setError(data.message || "Failed to fetch students");
+          setError(data.message || 'Failed to fetch students');
         }
       } catch (err) {
-        console.error("Error fetching students:", err);
-        setError("Failed to fetch students");
+        console.error('Error fetching students:', err);
+        setError('Failed to fetch students');
       }
     };
     fetchStudents();
@@ -38,8 +35,8 @@ const TeacherDashboard = () => {
         videoRef.current.srcObject = stream;
       }
     } catch (err) {
-      console.error("Error accessing webcam:", err);
-      setError("Failed to access webcam");
+      console.error('Error accessing webcam:', err);
+      setError('Failed to access webcam');
     }
   };
 
@@ -48,50 +45,49 @@ const TeacherDashboard = () => {
     const canvas = canvasRef.current;
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL("image/jpeg");
+    return canvas.toDataURL('image/jpeg');
   };
 
   const recognizeFace = async () => {
     if (!videoRef.current || !students.length) {
-      setError("Cannot recognize face: No students or webcam not started");
+      setError('Cannot recognize face: No students or webcam not started');
       return;
     }
 
     setIsRecognizing(true);
     const imageDataUrl = captureImage();
     if (!imageDataUrl) {
-      setError("Failed to capture image from webcam");
+      setError('Failed to capture image from webcam');
       setIsRecognizing(false);
       return;
     }
 
     try {
-      // Convert data URL to Blob
       const response = await fetch(imageDataUrl);
       const blob = await response.blob();
       const formData = new FormData();
-      formData.append("image", blob, "webcam.jpg");
+      formData.append('image', blob, 'webcam.jpg');
 
-      const recognitionResponse = await fetch(`${FACE_API_URL}/recognize`, {
-        method: "POST",
+      const recognitionResponse = await fetch('http://192.168.15.47:5000/recognize', {
+        method: 'POST',
         body: formData,
       });
 
       const recognitionData = await recognitionResponse.json();
-      console.log("Recognition response:", recognitionData);
+      console.log('Recognition response:', recognitionData);
 
       if (recognitionResponse.ok && recognitionData.studentId) {
         const student = students.find((s) => s._id === recognitionData.studentId);
         await markAttendance(recognitionData.studentId);
         alert(`Attendance marked for ${student.email} (Distance: ${recognitionData.distance.toFixed(2)})`);
       } else {
-        setError(recognitionData.error || "No student recognized. Try again or mark manually.");
+        setError(recognitionData.error || 'No student recognized. Try again or mark manually.');
       }
     } catch (err) {
-      console.error("Error recognizing face:", err);
-      setError("Failed to recognize face");
+      console.error('Error recognizing face:', err);
+      setError('Failed to recognize face');
     } finally {
       setIsRecognizing(false);
     }
@@ -99,18 +95,18 @@ const TeacherDashboard = () => {
 
   const markAttendance = async (studentId) => {
     try {
-      const response = await fetch(`${BASE_URL}/V1/users/attendance`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('http://192.168.15.47:5000/api/V1/users/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId }),
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || "Failed to mark attendance");
+        throw new Error(data.message || 'Failed to mark attendance');
       }
       return data;
     } catch (err) {
-      console.error("Error marking attendance:", err);
+      console.error('Error marking attendance:', err);
       throw err;
     }
   };
@@ -119,10 +115,10 @@ const TeacherDashboard = () => {
     if (!manualAttendance) return;
     try {
       await markAttendance(manualAttendance);
-      alert("Attendance marked manually");
+      alert('Attendance marked manually');
       setManualAttendance(null);
     } catch (err) {
-      setError("Failed to mark attendance manually");
+      setError('Failed to mark attendance manually');
     }
   };
 
@@ -133,7 +129,7 @@ const TeacherDashboard = () => {
           <h2 className="text-xl font-bold">Teacher Dashboard</h2>
         </div>
         <nav className="p-4 space-y-2">
-          <a href="#" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
+          <a href="/dashboard" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
             <i className="fas fa-home"></i>
             <span>Dashboard</span>
           </a>
@@ -141,12 +137,20 @@ const TeacherDashboard = () => {
             <i className="fas fa-calendar"></i>
             <span>Calendar</span>
           </a>
+          <a href="/schedule" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
+            <i className="fas fa-clock"></i>
+            <span>Schedule</span>
+          </a>
+          <a href="/view-schedule" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
+            <i className="fas fa-eye"></i>
+            <span>View Schedule</span>
+          </a>
           <a href="#" className="flex items-center space-x-3 p-3 rounded-lg bg-blue-500">
             <i className="fas fa-check-circle"></i>
             <span>Attendance</span>
           </a>
           <button
-            onClick={() => navigate("/signup")}
+            onClick={() => navigate('/signup')}
             className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 w-full text-left"
           >
             <i className="fas fa-sign-out-alt"></i>
@@ -165,7 +169,7 @@ const TeacherDashboard = () => {
             {error && <p className="text-red-500 mb-4">{error}</p>}
             <div className="mb-4">
               <video ref={videoRef} autoPlay className="w-full max-w-md rounded-lg" />
-              <canvas ref={canvasRef} style={{ display: "none" }} />
+              <canvas ref={canvasRef} style={{ display: 'none' }} />
               <button
                 onClick={startVideo}
                 className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -175,15 +179,15 @@ const TeacherDashboard = () => {
               <button
                 onClick={recognizeFace}
                 disabled={isRecognizing}
-                className={`mt-2 ml-2 px-4 py-2 ${isRecognizing ? "bg-gray-400" : "bg-green-600"} text-white rounded-lg hover:bg-green-700`}
+                className={`mt-2 ml-2 px-4 py-2 ${isRecognizing ? 'bg-gray-400' : 'bg-green-600'} text-white rounded-lg hover:bg-green-700`}
               >
-                {isRecognizing ? "Recognizing..." : "Recognize Face"}
+                {isRecognizing ? 'Recognizing...' : 'Recognize Face'}
               </button>
             </div>
             <div className="mb-4">
               <h3 className="text-lg font-semibold mb-2">Manual Attendance</h3>
               <select
-                value={manualAttendance || ""}
+                value={manualAttendance || ''}
                 onChange={(e) => setManualAttendance(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg"
               >
@@ -197,7 +201,7 @@ const TeacherDashboard = () => {
               <button
                 onClick={handleManualAttendance}
                 disabled={!manualAttendance}
-                className={`mt-2 px-4 py-2 ${!manualAttendance ? "bg-gray-400" : "bg-blue-600"} text-white rounded-lg hover:bg-blue-700`}
+                className={`mt-2 px-4 py-2 ${!manualAttendance ? 'bg-gray-400' : 'bg-blue-600'} text-white rounded-lg hover:bg-blue-700`}
               >
                 Mark Manually
               </button>
