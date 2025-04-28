@@ -186,7 +186,7 @@ const handleSubmit = async (e) => {
             <i className="fas fa-home"></i>
             <span>Home</span>
           </a>
-          <a href="#" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
+          <a href="/about" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
             <i className="fas fa-info-circle"></i>
             <span>About</span>
           </a>
@@ -202,7 +202,7 @@ const handleSubmit = async (e) => {
             <i className="fas fa-user-plus"></i>
             <span>Sign Up</span>
           </a>
-          <a href="#" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
+          <a href="/contact" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
             <i className="fas fa-envelope"></i>
             <span>Contact</span>
           </a>

@@ -7,6 +7,10 @@ import ParentDashboard from './pages/ParentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ScheduleManagement from './pages/ScheduleManagement';
 import ViewSchedule from './pages/ViewSchedule';
+import AddSyllabus from './pages/Syllabus';
+import ViewSyllabus from './pages/ViewSyllabus';
+import Contact from './pages/Contact.jsx';
+import About from './pages/About.jsx';
 
 function App() {
   return (
@@ -20,8 +24,11 @@ function App() {
         <Route path="/parent-dashboard" element={<ParentDashboard />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/schedule" element={<ScheduleManagement />} />
-                <Route path="/view-schedule" element={<ViewSchedule />} />
-
+        <Route path="/view-schedule" element={<ViewSchedule />} />
+        <Route path="/add-syllabus" element={<AddSyllabus />} />
+        <Route path="/view-syllabus" element={<ViewSyllabus />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<About />} />
       </Routes>
     </Router>
   );

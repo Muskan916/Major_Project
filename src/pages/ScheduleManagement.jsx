@@ -119,7 +119,7 @@ const ScheduleManagement = () => {
           <h2 className="text-xl font-bold">Teacher Dashboard</h2>
         </div>
         <nav className="p-4 space-y-2">
-          <a href="/dashboard" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
+          <a href="/teacher-dashboard" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
             <i className="fas fa-home"></i>
             <span>Dashboard</span>
           </a>

@@ -16,7 +16,8 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(fileUpload());
 
 // Route handling
-app.use("/api/V1/schedule",require("./src/routes/scheduleRoutes.js"))
+app.use("/api/V1/schedule", require("./src/routes/scheduleRoutes.js"))
+app.use('/api/V1/syllabus', require("./src/routes/syllabusRoutes.js"))
 app.use("/api/V1/users", require("./src/routes/user-routes.js"));
 app.use('/uploads', express.static('uploads')); // Serve uploaded photos
 
