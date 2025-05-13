@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BASE_URL = "http://192.168.15.47:5000/api";
+const BASE_URL = "http://192.168.255.47:5000/api";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -218,9 +218,7 @@ const handleSubmit = async (e) => {
             <i className="fas fa-bars"></i>
           </button>
           <div className="flex items-center justify-center flex-1">
-            <img src="sguicon.png" alt="SGU Logo" className="h-12 w-auto mr-4" />
-            <span className="text-3xl font-bold text-gray-800">Muskan Latkar</span>
-            <img src="sguicon.png" alt="SGU Logo" className="h-12 w-auto ml-4" />
+            <span className="text-3xl font-bold text-gray-800">Sign Up Page</span>
           </div>
         </header>
 

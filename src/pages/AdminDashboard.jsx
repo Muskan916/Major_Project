@@ -30,11 +30,11 @@ const AdminDashboard = () => {
             <span>Home</span>
           </a>
           <a
-            href="#"
+            href="/schedule"
             className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 transition-colors"
           >
             <i className="fas fa-users"></i>
-            <span>Manage Users</span>
+            <span>Schedule</span>
           </a>
           <a
             href="#"
@@ -60,9 +60,7 @@ const AdminDashboard = () => {
             <i className="fas fa-bars"></i>
           </button>
           <div className="flex items-center justify-center flex-1">
-            <img src="sguicon.png" alt="SGU Logo" className="h-12 w-auto mr-4" />
             <span className="text-3xl font-bold text-gray-800">Admin Dashboard</span>
-            <img src="sguicon.png" alt="SGU Logo" className="h-12 w-auto ml-4" />
           </div>
         </header>
 

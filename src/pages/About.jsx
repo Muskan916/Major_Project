@@ -60,9 +60,7 @@ const About = () => {
             <i className="fas fa-bars"></i>
           </button>
           <div className="flex items-center justify-center flex-1">
-            <img src="sguicon.png" alt="SGU Logo" className="h-12 w-auto mr-4" />
             <span className="text-3xl font-bold text-gray-800">About Us</span>
-            <img src="sguicon.png" alt="SGU Logo" className="h-12 w-auto ml-4" />
           </div>
         </header>
 

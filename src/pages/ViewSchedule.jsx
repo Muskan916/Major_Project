@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
 
 const ViewSchedule = () => {
   const [schedule, setSchedule] = useState({});
@@ -11,7 +12,7 @@ const ViewSchedule = () => {
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
-        const response = await fetch('http://192.168.15.47:5000/api/V1/schedule/getSchedule', {
+        const response = await fetch('http://192.168.255.47:5000/api/V1/schedule/getSchedule', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -32,40 +33,8 @@ const ViewSchedule = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <aside className="w-64 bg-gradient-to-b from-blue-800 to-blue-600 text-white">
-        <div className="p-4 border-b border-blue-700">
-          <h2 className="text-xl font-bold">Teacher Dashboard</h2>
-        </div>
-        <nav className="p-4 space-y-2">
-          <a href="/teacher-dashboard" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
-            <i className="fas fa-home"></i>
-            <span>Dashboard</span>
-          </a>
-          <a href="#" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
-            <i className="fas fa-calendar"></i>
-            <span>Calendar</span>
-          </a>
-          <a href="/schedule" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
-            <i className="fas fa-clock"></i>
-            <span>Schedule</span>
-          </a>
-          <a href="/view-schedule" className="flex items-center space-x-3 p-3 rounded-lg bg-blue-500">
-            <i className="fas fa-eye"></i>
-            <span>View Schedule</span>
-          </a>
-          <a href="/dashboard" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700">
-            <i className="fas fa-check-circle"></i>
-            <span>Attendance</span>
-          </a>
-          <button
-            onClick={() => navigate('/signup')}
-            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-700 w-full text-left"
-          >
-            <i className="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-          </button>
-        </nav>
-      </aside>
+            <Sidebar activePath="/view-schedule" />
+
 
       <div className="flex-1 flex flex-col">
         <header className="bg-white shadow-md p-4">

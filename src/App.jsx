@@ -11,6 +11,7 @@ import AddSyllabus from './pages/Syllabus';
 import ViewSyllabus from './pages/ViewSyllabus';
 import Contact from './pages/Contact.jsx';
 import About from './pages/About.jsx';
+import Attendance from './pages/Attendance.jsx';
 
 function App() {
   return (
@@ -29,6 +30,8 @@ function App() {
         <Route path="/view-syllabus" element={<ViewSyllabus />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
+        <Route path="/attendance" element={<Attendance />} />
+
       </Routes>
     </Router>
   );
